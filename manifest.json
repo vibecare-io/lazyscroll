@@ -6,15 +6,17 @@
   "permissions": [
     "activeTab",
     "storage",
-    "sidePanel"
+    "sidePanel",
+    "scripting",
+    "debugger"
   ],
   "action": {
-    "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "assets/icons/icon16.png",
       "48": "assets/icons/icon48.png",
       "128": "assets/icons/icon128.png"
-    }
+    },
+    "default_title": "Open LazyScroll"
   },
   "icons": {
     "16": "assets/icons/icon16.png",

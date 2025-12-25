@@ -6,7 +6,7 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  background: #24272a;
   color: #fff;
   min-height: 100vh;
 }
@@ -14,6 +14,9 @@ body {
 .container {
   padding: 16px;
   max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 header {
@@ -22,12 +25,16 @@ header {
 }
 
 h1 {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.tagline {
+  font-size: 12px;
+  color: #6a737d;
+  margin-top: 4px;
 }
 
 /* Camera Section */
@@ -39,9 +46,10 @@ h1 {
   position: relative;
   width: 100%;
   aspect-ratio: 4/3;
-  background: #000;
+  background: #141618;
   border-radius: 12px;
   overflow: hidden;
+  border: 1px solid #3b4046;
 }
 
 #video {
@@ -61,8 +69,6 @@ h1 {
   transform: scaleX(-1);
 }
 
-/* Removed zone styles - now using lip-relative detection */
-
 .camera-placeholder {
   position: absolute;
   top: 0;
@@ -73,8 +79,8 @@ h1 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: #667eea;
+  background: #141618;
+  color: #6a737d;
 }
 
 .camera-placeholder.hidden {
@@ -83,12 +89,12 @@ h1 {
 
 .placeholder-icon {
   margin-bottom: 12px;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .camera-placeholder p {
-  font-size: 14px;
-  color: #888;
+  font-size: 13px;
+  color: #6a737d;
 }
 
 /* Controls */
@@ -99,32 +105,35 @@ h1 {
 .btn-primary {
   width: 100%;
   padding: 14px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #037dd6;
   color: white;
   border: none;
-  border-radius: 10px;
-  font-size: 16px;
+  border-radius: 100px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, transform 0.1s;
   margin-bottom: 16px;
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  background: #0260a4;
 }
 
 .btn-primary:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 .btn-primary.active {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: #d73a49;
+}
+
+.btn-primary.active:hover {
+  background: #b02a37;
 }
 
 .btn-icon {
@@ -133,10 +142,11 @@ h1 {
 }
 
 .setting {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin-bottom: 12px;
+  background: #141618;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border: 1px solid #3b4046;
 }
 
 .setting:last-child {
@@ -155,21 +165,24 @@ h1 {
   gap: 10px;
   cursor: pointer;
   font-size: 13px;
-  color: #ccc;
+  color: #bbc0c5;
 }
 
 .checkbox-label input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: #667eea;
+  accent-color: #037dd6;
   cursor: pointer;
 }
 
 .setting label {
   display: block;
   font-size: 12px;
-  color: #888;
-  margin-bottom: 8px;
+  color: #6a737d;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 .slider-row {
@@ -181,61 +194,70 @@ h1 {
 input[type="range"] {
   flex: 1;
   -webkit-appearance: none;
-  height: 4px;
-  background: #333;
-  border-radius: 2px;
+  height: 6px;
+  background: #3b4046;
+  border-radius: 3px;
   outline: none;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 18px;
+  height: 18px;
+  background: #037dd6;
   border-radius: 50%;
   cursor: pointer;
+  border: 2px solid #fff;
 }
 
-#sensitivityValue {
+#scrollSpeedValue,
+#deadzoneValue {
   font-size: 13px;
   font-weight: 600;
-  color: #667eea;
-  min-width: 40px;
+  color: #bbc0c5;
+  min-width: 45px;
   text-align: right;
 }
 
 /* Status */
 .status {
   text-align: center;
-  padding: 10px;
+  padding: 10px 14px;
   font-size: 13px;
-  color: #888;
-  background: rgba(255, 255, 255, 0.03);
+  color: #6a737d;
+  background: #141618;
   border-radius: 8px;
   margin-bottom: 16px;
+  border: 1px solid #3b4046;
 }
 
-.status.tracking {
-  color: #10b981;
+.status.active {
+  color: #28a745;
+  border-color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
 }
 
 .status.error {
-  color: #ef4444;
+  color: #d73a49;
+  border-color: #d73a49;
+  background: rgba(215, 58, 73, 0.1);
 }
 
 /* Instructions */
 .instructions {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
-  padding: 14px;
+  background: #141618;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #3b4046;
 }
 
 .instructions h3 {
   font-size: 11px;
-  color: #666;
+  color: #6a737d;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  font-weight: 600;
 }
 
 .instructions ul {
@@ -243,16 +265,55 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .instructions li {
-  font-size: 12px;
-  color: #888;
-  padding: 5px 0;
-  padding-left: 18px;
+  font-size: 13px;
+  color: #bbc0c5;
+  padding: 6px 0;
+  padding-left: 20px;
   position: relative;
+  line-height: 1.4;
 }
 
 .instructions li::before {
-  content: '>';
+  content: '';
   position: absolute;
   left: 0;
-  color: #667eea;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  background: #037dd6;
+  border-radius: 50%;
+}
+
+.instructions li strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Footer */
+.footer {
+  margin-top: auto;
+  padding-top: 20px;
+  text-align: center;
+}
+
+.footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #6a737d;
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 0.2s;
+}
+
+.footer a:hover {
+  color: #bbc0c5;
+}
+
+.footer svg {
+  opacity: 0.7;
+}
+
+.footer a:hover svg {
+  opacity: 1;
 }

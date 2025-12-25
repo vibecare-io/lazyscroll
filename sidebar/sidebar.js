@@ -52,7 +52,7 @@ function dist(p1, p2) {
 
 // Initialize MediaPipe models
 async function initializeModels() {
-  updateStatus('Loading detection models...');
+  updateStatus('Loading AI models...');
 
   try {
     const wasmPath = chrome.runtime.getURL('lib/wasm');
@@ -80,7 +80,7 @@ async function initializeModels() {
       outputFacialTransformationMatrixes: false
     });
 
-    updateStatus('Ready to start');
+    updateStatus('Ready');
     console.log('[LazyScroll] Models initialized (Hand + Face)');
     return true;
   } catch (error) {
@@ -218,35 +218,39 @@ function drawInterface() {
     const lx = lip.x * width;
     const dzPixels = deadzone * height;
 
-    // Deadzone shading
-    ctx.fillStyle = isScrolling ? 'rgba(34, 211, 238, 0.03)' : 'rgba(255, 255, 255, 0.02)';
+    // Deadzone shading - more visible
+    ctx.fillStyle = isScrolling ? 'rgba(34, 211, 238, 0.15)' : 'rgba(255, 255, 255, 0.08)';
     ctx.fillRect(0, ly - dzPixels, width, dzPixels * 2);
 
-    // Threshold lines (dashed)
+    // Threshold lines (dashed) - brighter
     ctx.beginPath();
     ctx.setLineDash([8, 8]);
     ctx.moveTo(0, ly - dzPixels);
     ctx.lineTo(width, ly - dzPixels);
     ctx.moveTo(0, ly + dzPixels);
     ctx.lineTo(width, ly + dzPixels);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.lineWidth = 2;
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Main horizontal horizon line
+    // Main horizontal horizon line - brighter
     ctx.beginPath();
     ctx.moveTo(0, ly);
     ctx.lineTo(width, ly);
-    ctx.strokeStyle = isScrolling ? 'rgba(34, 211, 238, 0.4)' : 'rgba(255, 255, 255, 0.1)';
-    ctx.lineWidth = isScrolling ? 2 : 1;
+    ctx.strokeStyle = isScrolling ? 'rgba(34, 211, 238, 0.8)' : 'rgba(255, 255, 255, 0.4)';
+    ctx.lineWidth = isScrolling ? 3 : 2;
     ctx.stroke();
 
-    // Central anchor point at lip center
+    // Central anchor point at lip center - larger and brighter
     ctx.beginPath();
-    ctx.arc(lx, ly, 4, 0, 2 * Math.PI);
-    ctx.fillStyle = isScrolling ? '#22d3ee' : '#475569';
+    ctx.arc(lx, ly, 6, 0, 2 * Math.PI);
+    ctx.fillStyle = isScrolling ? '#22d3ee' : '#ffffff';
     ctx.fill();
+    // Add outline for better visibility
+    ctx.strokeStyle = isScrolling ? '#0891b2' : '#666666';
+    ctx.lineWidth = 2;
+    ctx.stroke();
   }
 
   // 2. Draw Hand and Index Finger
@@ -255,9 +259,9 @@ function drawInterface() {
     const tx = indexTip.x * width;
     const ty = indexTip.y * height;
 
-    // Draw hand skeleton (subtle)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.lineWidth = 1;
+    // Draw hand skeleton - more visible
+    ctx.strokeStyle = 'rgba(0, 255, 100, 0.6)';
+    ctx.lineWidth = 2;
     HAND_CONNECTIONS.forEach(([start, end]) => {
       const p1 = currentHand[start];
       const p2 = currentHand[end];
@@ -320,11 +324,14 @@ function drawInterface() {
       ctx.fill();
       ctx.shadowBlur = 0;
     } else {
-      // Idle state - simple white dot
+      // Idle state - bright green dot
       ctx.beginPath();
-      ctx.arc(tx, ty, 6, 0, 2 * Math.PI);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.arc(tx, ty, 8, 0, 2 * Math.PI);
+      ctx.fillStyle = '#00ff66';
       ctx.fill();
+      ctx.strokeStyle = '#006622';
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
   }
 
@@ -339,7 +346,7 @@ async function startTracking() {
   }
 
   try {
-    updateStatus('Requesting camera...');
+    updateStatus('Starting camera...');
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: 640, height: 480, facingMode: 'user' }
     });
@@ -355,8 +362,8 @@ async function startTracking() {
     placeholder.classList.add('hidden');
 
     isTracking = true;
-    updateStatus('Tracking active', 'tracking');
-    startBtn.textContent = 'Stop Tracking';
+    updateStatus('Gestures active', 'active');
+    startBtn.textContent = 'Disable Gestures';
     startBtn.classList.add('active');
 
     // Start detection loop
@@ -398,14 +405,14 @@ function stopTracking() {
   currentHand = null;
   currentFace = null;
 
-  updateStatus('Ready to start');
+  updateStatus('Ready');
   startBtn.innerHTML = `
     <span class="btn-icon">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <polygon points="5 3 19 12 5 21 5 3"/>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 1 1 3 0m-3 6a1.5 1.5 0 1 0-3 0v3c0 4.418 3.582 8 8 8s8-3.582 8-8v-1.5m-4-6.5v8m0-8a1.5 1.5 0 0 0-3 0m3 0a1.5 1.5 0 0 1 3 0m0 0v1.5m0 0a1.5 1.5 0 0 1 3 0v4.5"/>
       </svg>
     </span>
-    Start Tracking
+    Enable Gestures
   `;
   startBtn.classList.remove('active');
 
