@@ -81,7 +81,6 @@ async function initializeModels() {
     });
 
     updateStatus('Ready');
-    console.log('[LazyScroll] Models initialized (Hand + Face)');
     return true;
   } catch (error) {
     console.error('[LazyScroll] Failed to init models:', error);
@@ -149,20 +148,6 @@ function processTrackingResults() {
   const gap = lipCenter.y - indexTip.y;
   const absGap = Math.abs(gap);
 
-  // Debug logging (throttled)
-  if (frameCount % 30 === 0) {
-    console.log('[LazyScroll] Detection:', {
-      isPointed,
-      tipToMcp: tipToMcp.toFixed(3),
-      pipToMcp: pipToMcp.toFixed(3),
-      gap: gap.toFixed(3),
-      absGap: absGap.toFixed(3),
-      deadzone,
-      fingerY: indexTip.y.toFixed(3),
-      lipY: lipCenter.y.toFixed(3)
-    });
-  }
-
   if (!isPointed) {
     stopScrolling();
     return;
@@ -186,14 +171,11 @@ function stopScrolling() {
 }
 
 function sendScrollCommand(direction, speed) {
-  console.log('[LazyScroll] Sending scroll command:', direction, speed);
   chrome.runtime.sendMessage({
     type: 'SCROLL_COMMAND',
     direction,
     speed
-  }).catch((err) => {
-    console.error('[LazyScroll] Failed to send scroll command:', err);
-  });
+  }).catch(() => {});
 }
 
 // Draw visual feedback on canvas
@@ -368,8 +350,6 @@ async function startTracking() {
 
     // Start detection loop
     detectFrame();
-
-    console.log('[LazyScroll] Tracking started');
   } catch (error) {
     console.error('[LazyScroll] Camera error:', error);
     if (error.name === 'NotAllowedError') {
@@ -415,8 +395,6 @@ function stopTracking() {
     Enable Gestures
   `;
   startBtn.classList.remove('active');
-
-  console.log('[LazyScroll] Tracking stopped');
 }
 
 function updateStatus(text, className = '') {
@@ -470,5 +448,3 @@ chrome.storage.local.get(['scrollSpeed', 'deadzone', 'invertScroll'], (result) =
 
 // Initialize on load
 initializeModels();
-
-console.log('[LazyScroll] Sidebar loaded - Face + Hand detection mode');

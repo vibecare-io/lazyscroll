@@ -4,7 +4,6 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'SCROLL') {
     const scrollAmount = message.direction === 'up' ? -message.speed : message.speed;
-    console.log('[LazyScroll] Scrolling:', message.direction, scrollAmount);
     window.scrollBy({
       top: scrollAmount,
       behavior: 'auto'
@@ -13,5 +12,3 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   return true;
 });
-
-console.log('[LazyScroll] Content script loaded');

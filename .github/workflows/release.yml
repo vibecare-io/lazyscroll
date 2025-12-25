@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate version from date
+        id: version
+        run: echo "version=$(date +'%Y.%m.%d-%H.%M')" >> $GITHUB_OUTPUT
+
+      - name: Update manifest version
+        run: |
+          jq '.version = "${{ steps.version.outputs.version }}"' manifest.json > tmp.json
+          mv tmp.json manifest.json
+
+      - name: Create extension package
+        run: |
+          zip -r lazyscroll-v${{ steps.version.outputs.version }}.zip \
+            manifest.json \
+            src/ \
+            sidebar/ \
+            popup/ \
+            offscreen/ \
+            permissions/ \
+            assets/ \
+            lib/ \
+            -x "*.DS_Store" -x "*.map"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: LazyScroll v${{ steps.version.outputs.version }}
+          files: lazyscroll-v${{ steps.version.outputs.version }}.zip
+          generate_release_notes: true

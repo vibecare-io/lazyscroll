@@ -34,7 +34,6 @@ async function sendKeyboardEvent(tabId, direction, speed) {
     if (!debuggerAttached.has(tabId)) {
       await chrome.debugger.attach({ tabId }, '1.3');
       debuggerAttached.add(tabId);
-      console.log('[LazyScroll] Debugger attached to tab:', tabId);
     }
 
     // Send single key event (throttling controls speed now)
@@ -72,40 +71,33 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 chrome.debugger.onDetach.addListener((source) => {
   if (source.tabId) {
     debuggerAttached.delete(source.tabId);
-    console.log('[LazyScroll] Debugger detached from tab:', source.tabId);
   }
 });
 
 // Send message to active tab's content script
 async function sendToContentScript(message) {
   const tab = await getActiveTab();
-  console.log('[LazyScroll] Active tab:', tab?.id, tab?.url);
 
   if (!tab?.id) {
-    console.warn('[LazyScroll] No active tab found');
     return false;
   }
 
-  // Skip chrome:// pages entirely - use keyboard fallback
+  // Skip chrome:// pages - use keyboard fallback
   if (tab.url?.startsWith('chrome://')) {
-    console.log('[LazyScroll] Chrome page detected, using keyboard fallback');
     return await sendKeyboardEvent(tab.id, message.direction, message.speed);
   }
 
   // PDF files - use keyboard fallback (window.scrollBy doesn't work on PDF viewer)
   if (tab.url?.toLowerCase().endsWith('.pdf')) {
-    console.log('[LazyScroll] PDF detected, using keyboard fallback');
     return await sendKeyboardEvent(tab.id, message.direction, message.speed);
   }
 
   // Try content script first
   try {
-    const response = await chrome.tabs.sendMessage(tab.id, message);
-    console.log('[LazyScroll] Content script responded:', response);
+    await chrome.tabs.sendMessage(tab.id, message);
     return true;
   } catch (error) {
-    console.log('[LazyScroll] Content script failed, trying keyboard fallback:', error.message);
-    // Fallback to keyboard events (for PDFs and other restricted pages)
+    // Fallback to keyboard events for restricted pages
     return await sendKeyboardEvent(tab.id, message.direction, message.speed);
   }
 }
@@ -113,7 +105,6 @@ async function sendToContentScript(message) {
 // Message handler
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'SCROLL_COMMAND') {
-    console.log('[LazyScroll] Background received scroll command:', message.direction, message.speed);
     sendToContentScript({
       type: 'SCROLL',
       direction: message.direction,
@@ -129,5 +120,3 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.action.onClicked.addListener((tab) => {
   chrome.sidePanel.open({ windowId: tab.windowId });
 });
-
-console.log('[LazyScroll] Background service worker loaded');
