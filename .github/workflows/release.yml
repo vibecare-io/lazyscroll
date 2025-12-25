@@ -15,16 +15,20 @@ jobs:
 
       - name: Generate version from date
         id: version
-        run: echo "version=$(date +'%Y.%m.%d-%H.%M')" >> $GITHUB_OUTPUT
+        run: |
+          # Chrome requires 1-4 dot-separated integers (0-65536 each)
+          # Format: year.monthday.hourminute (e.g., 2025.1225.1430)
+          echo "manifest_version=$(date +'%Y.%-m%d.%-H%M')" >> $GITHUB_OUTPUT
+          echo "tag_version=$(date +'%Y.%m.%d-%H.%M')" >> $GITHUB_OUTPUT
 
       - name: Update manifest version
         run: |
-          jq '.version = "${{ steps.version.outputs.version }}"' manifest.json > tmp.json
+          jq '.version = "${{ steps.version.outputs.manifest_version }}"' manifest.json > tmp.json
           mv tmp.json manifest.json
 
       - name: Create extension package
         run: |
-          zip -r lazyscroll-v${{ steps.version.outputs.version }}.zip \
+          zip -r lazyscroll-v${{ steps.version.outputs.tag_version }}.zip \
             manifest.json \
             src/ \
             sidebar/ \
@@ -38,7 +42,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: LazyScroll v${{ steps.version.outputs.version }}
-          files: lazyscroll-v${{ steps.version.outputs.version }}.zip
+          tag_name: v${{ steps.version.outputs.tag_version }}
+          name: LazyScroll v${{ steps.version.outputs.tag_version }}
+          files: lazyscroll-v${{ steps.version.outputs.tag_version }}.zip
           generate_release_notes: true
