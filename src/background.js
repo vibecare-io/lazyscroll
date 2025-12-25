@@ -5,6 +5,9 @@
 // Track debugger state per tab
 const debuggerAttached = new Set();
 
+// Throttle keyboard events for smoother PDF scrolling
+let lastKeyPressTime = 0;
+
 // Get active tab
 async function getActiveTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -13,6 +16,16 @@ async function getActiveTab() {
 
 // Send keyboard event via debugger API (for PDFs)
 async function sendKeyboardEvent(tabId, direction, speed) {
+  // Throttle proportionally: speed 1-100 maps to interval 100ms-16ms
+  // Linear interpolation: faster overall, still proportional
+  const now = Date.now();
+  const minInterval = Math.round(16 + ((100 - speed) / 100) * 84);
+
+  if (now - lastKeyPressTime < minInterval) {
+    return true; // Skip this frame, throttled
+  }
+  lastKeyPressTime = now;
+
   const key = direction === 'up' ? 'ArrowUp' : 'ArrowDown';
   const keyCode = direction === 'up' ? 38 : 40;
 
@@ -24,26 +37,22 @@ async function sendKeyboardEvent(tabId, direction, speed) {
       console.log('[LazyScroll] Debugger attached to tab:', tabId);
     }
 
-    // Send multiple key events based on speed (more events = faster scroll)
-    const keyPresses = Math.max(1, Math.floor(speed / 10));
+    // Send single key event (throttling controls speed now)
+    await chrome.debugger.sendCommand({ tabId }, 'Input.dispatchKeyEvent', {
+      type: 'keyDown',
+      key,
+      code: key,
+      windowsVirtualKeyCode: keyCode,
+      nativeVirtualKeyCode: keyCode
+    });
 
-    for (let i = 0; i < keyPresses; i++) {
-      await chrome.debugger.sendCommand({ tabId }, 'Input.dispatchKeyEvent', {
-        type: 'keyDown',
-        key,
-        code: key,
-        windowsVirtualKeyCode: keyCode,
-        nativeVirtualKeyCode: keyCode
-      });
-
-      await chrome.debugger.sendCommand({ tabId }, 'Input.dispatchKeyEvent', {
-        type: 'keyUp',
-        key,
-        code: key,
-        windowsVirtualKeyCode: keyCode,
-        nativeVirtualKeyCode: keyCode
-      });
-    }
+    await chrome.debugger.sendCommand({ tabId }, 'Input.dispatchKeyEvent', {
+      type: 'keyUp',
+      key,
+      code: key,
+      windowsVirtualKeyCode: keyCode,
+      nativeVirtualKeyCode: keyCode
+    });
 
     return true;
   } catch (error) {
