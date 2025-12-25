@@ -4,6 +4,8 @@ Hands-free scrolling for your browser using hand gestures and face detection.
 
 ![LazyScroll Demo](demo.gif)
 
+Youtube: https://youtu.be/EFr2aEvXHJ8
+
 ## What is LazyScroll?
 
 LazyScroll is a Chrome extension that lets you scroll any webpage without touching your keyboard or mouse. Point your index finger above your lips to scroll up, below to scroll down. Simple as that.
