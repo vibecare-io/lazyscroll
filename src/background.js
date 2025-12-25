@@ -17,7 +17,6 @@ async function getActiveTab() {
 // Send keyboard event via debugger API (for PDFs)
 async function sendKeyboardEvent(tabId, direction, speed) {
   // Throttle proportionally: speed 1-100 maps to interval 100ms-16ms
-  // Linear interpolation: faster overall, still proportional
   const now = Date.now();
   const minInterval = Math.round(16 + ((100 - speed) / 100) * 84);
 

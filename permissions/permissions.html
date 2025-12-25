@@ -7,7 +7,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      background: #24272a;
       color: white;
       min-height: 100vh;
       display: flex;
@@ -22,19 +22,17 @@
     h1 {
       font-size: 32px;
       margin-bottom: 16px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #fff;
     }
     .subtitle {
-      color: #888;
+      color: #6a737d;
       margin-bottom: 40px;
     }
     .icon {
       width: 120px;
       height: 120px;
       margin: 0 auto 30px;
-      background: rgba(102, 126, 234, 0.1);
+      background: rgba(3, 125, 214, 0.1);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -43,51 +41,52 @@
     .icon svg {
       width: 60px;
       height: 60px;
-      color: #667eea;
+      color: #037dd6;
     }
-    .icon.success svg { color: #10b981; }
-    .icon.error svg { color: #ef4444; }
+    .icon.success { background: rgba(40, 167, 69, 0.1); }
+    .icon.success svg { color: #28a745; }
+    .icon.error { background: rgba(215, 58, 73, 0.1); }
+    .icon.error svg { color: #d73a49; }
     .btn {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #037dd6;
       color: white;
       border: none;
       padding: 16px 40px;
       font-size: 18px;
       font-weight: 600;
-      border-radius: 12px;
+      border-radius: 100px;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: background 0.2s;
     }
     .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+      background: #0260a4;
     }
     .btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
+      background: #3b4046;
     }
     .status {
       margin-top: 30px;
       font-size: 16px;
-      color: #888;
+      color: #6a737d;
     }
-    .status.success { color: #10b981; }
-    .status.error { color: #ef4444; }
+    .status.success { color: #28a745; }
+    .status.error { color: #d73a49; }
     .hint {
       margin-top: 20px;
       font-size: 14px;
-      color: #666;
+      color: #6a737d;
       line-height: 1.6;
     }
     #video-preview {
       margin-top: 30px;
       width: 320px;
       height: 240px;
-      background: #000;
+      background: #141618;
       border-radius: 12px;
       display: none;
+      transform: scaleX(-1);
     }
   </style>
 </head>

@@ -40,7 +40,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["lib/*", "sidebar/*"],
+      "resources": ["lib/*", "sidebar/*", "permissions/*"],
       "matches": ["<all_urls>"]
     }
   ]

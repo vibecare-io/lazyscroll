@@ -13,6 +13,18 @@ const scrollSpeedValue = document.getElementById('scrollSpeedValue');
 const deadzoneSlider = document.getElementById('deadzone');
 const deadzoneValue = document.getElementById('deadzoneValue');
 const invertScrollCheckbox = document.getElementById('invertScroll');
+const cameraContainer = document.getElementById('cameraContainer');
+const placeholderText = document.getElementById('placeholderText');
+const setupMessage = document.getElementById('setupMessage');
+const controlsSection = document.getElementById('controls');
+
+// Compact mode elements
+const compactBtn = document.getElementById('compactBtn');
+const expandBtn = document.getElementById('expandBtn');
+const compactView = document.getElementById('compactView');
+const fullViewContent = document.getElementById('fullViewContent');
+const compactIndicator = document.getElementById('compactIndicator');
+const compactText = document.getElementById('compactText');
 
 // State
 let handLandmarker = null;
@@ -23,8 +35,8 @@ let animationId = null;
 let frameCount = 0;
 
 // Settings (defaults)
-let scrollSpeed = 20;      // pixels per frame
-let deadzone = 0.05;       // 5% of screen height
+let scrollSpeed = 20;
+let deadzone = 0.05;
 let invertScroll = false;
 
 // Current detection results
@@ -33,19 +45,16 @@ let currentFace = null;
 
 // Hand skeleton connections for drawing
 const HAND_CONNECTIONS = [
-  [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
-  [0, 5], [5, 6], [6, 7], [7, 8],       // Index
-  [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
-  [0, 13], [13, 14], [14, 15], [15, 16], // Ring
-  [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
-  [5, 9], [9, 13], [13, 17]             // Palm
+  [0, 1], [1, 2], [2, 3], [3, 4],
+  [0, 5], [5, 6], [6, 7], [7, 8],
+  [0, 9], [9, 10], [10, 11], [11, 12],
+  [0, 13], [13, 14], [14, 15], [15, 16],
+  [0, 17], [17, 18], [18, 19], [19, 20],
+  [5, 9], [9, 13], [13, 17]
 ];
 
-// Lip landmark index in FaceLandmarker (upper lip center)
-// FaceLandmarker uses 478 landmarks, index 13 is upper lip
 const LIP_CENTER_INDEX = 13;
 
-// Distance helper
 function dist(p1, p2) {
   return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
 }
@@ -58,7 +67,6 @@ async function initializeModels() {
     const wasmPath = chrome.runtime.getURL('lib/wasm');
     const vision = await FilesetResolver.forVisionTasks(wasmPath);
 
-    // Initialize HandLandmarker
     handLandmarker = await HandLandmarker.createFromOptions(vision, {
       baseOptions: {
         modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
@@ -68,7 +76,6 @@ async function initializeModels() {
       numHands: 1
     });
 
-    // Initialize FaceLandmarker
     faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
       baseOptions: {
         modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
@@ -97,7 +104,6 @@ function detectFrame() {
 
   const startTimeMs = performance.now();
 
-  // Detect hands
   const handResults = handLandmarker.detectForVideo(video, startTimeMs);
   if (handResults.landmarks && handResults.landmarks.length > 0) {
     currentHand = handResults.landmarks[0];
@@ -105,7 +111,6 @@ function detectFrame() {
     currentHand = null;
   }
 
-  // Detect face
   const faceResults = faceLandmarker.detectForVideo(video, startTimeMs);
   if (faceResults.faceLandmarks && faceResults.faceLandmarks.length > 0) {
     currentFace = faceResults.faceLandmarks[0];
@@ -113,38 +118,33 @@ function detectFrame() {
     currentFace = null;
   }
 
-  // Process results and draw
   processTrackingResults();
   drawInterface();
 
   animationId = requestAnimationFrame(detectFrame);
 }
 
-// Main scroll logic - lip-relative detection
+// Main scroll logic
 function processTrackingResults() {
   if (!currentHand || !currentFace || !isTracking) {
     stopScrolling();
     return;
   }
 
-  // Get key landmarks
-  const indexTip = currentHand[8];   // Fingertip
-  const indexPip = currentHand[6];   // PIP joint
-  const indexMcp = currentHand[5];   // Knuckle (MCP)
-  const lipCenter = currentFace[LIP_CENTER_INDEX]; // Lip center
+  const indexTip = currentHand[8];
+  const indexPip = currentHand[6];
+  const indexMcp = currentHand[5];
+  const lipCenter = currentFace[LIP_CENTER_INDEX];
 
   if (!indexTip || !indexPip || !indexMcp || !lipCenter) {
     stopScrolling();
     return;
   }
 
-  // Check if index finger is pointed (extended)
   const tipToMcp = dist(indexTip, indexMcp);
   const pipToMcp = dist(indexPip, indexMcp);
   const isPointed = tipToMcp > pipToMcp * 1.15;
 
-  // Calculate gap from lip center
-  // Positive gap = finger above lips, Negative gap = finger below lips
   const gap = lipCenter.y - indexTip.y;
   const absGap = Math.abs(gap);
 
@@ -155,8 +155,6 @@ function processTrackingResults() {
 
   if (absGap > deadzone) {
     isScrolling = true;
-    // gap > 0 means finger is above lips -> scroll up
-    // gap < 0 means finger is below lips -> scroll down
     const direction = gap > 0 ? 'up' : 'down';
     const actualDirection = invertScroll ? (direction === 'up' ? 'down' : 'up') : direction;
 
@@ -178,7 +176,7 @@ function sendScrollCommand(direction, speed) {
   }).catch(() => {});
 }
 
-// Draw visual feedback on canvas
+// Draw visual feedback
 function drawInterface() {
   if (!canvas || !isTracking) return;
 
@@ -188,23 +186,18 @@ function drawInterface() {
 
   ctx.save();
   ctx.clearRect(0, 0, width, height);
-
-  // Mirror horizontal for natural feedback
   ctx.scale(-1, 1);
   ctx.translate(-width, 0);
 
-  // 1. Draw Lip Reference Line and Deadzone
   if (currentFace && currentFace[LIP_CENTER_INDEX]) {
     const lip = currentFace[LIP_CENTER_INDEX];
     const ly = lip.y * height;
     const lx = lip.x * width;
     const dzPixels = deadzone * height;
 
-    // Deadzone shading - more visible
     ctx.fillStyle = isScrolling ? 'rgba(34, 211, 238, 0.15)' : 'rgba(255, 255, 255, 0.08)';
     ctx.fillRect(0, ly - dzPixels, width, dzPixels * 2);
 
-    // Threshold lines (dashed) - brighter
     ctx.beginPath();
     ctx.setLineDash([8, 8]);
     ctx.moveTo(0, ly - dzPixels);
@@ -216,7 +209,6 @@ function drawInterface() {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Main horizontal horizon line - brighter
     ctx.beginPath();
     ctx.moveTo(0, ly);
     ctx.lineTo(width, ly);
@@ -224,24 +216,20 @@ function drawInterface() {
     ctx.lineWidth = isScrolling ? 3 : 2;
     ctx.stroke();
 
-    // Central anchor point at lip center - larger and brighter
     ctx.beginPath();
     ctx.arc(lx, ly, 6, 0, 2 * Math.PI);
     ctx.fillStyle = isScrolling ? '#22d3ee' : '#ffffff';
     ctx.fill();
-    // Add outline for better visibility
     ctx.strokeStyle = isScrolling ? '#0891b2' : '#666666';
     ctx.lineWidth = 2;
     ctx.stroke();
   }
 
-  // 2. Draw Hand and Index Finger
   if (currentHand) {
     const indexTip = currentHand[8];
     const tx = indexTip.x * width;
     const ty = indexTip.y * height;
 
-    // Draw hand skeleton - more visible
     ctx.strokeStyle = 'rgba(0, 255, 100, 0.6)';
     ctx.lineWidth = 2;
     HAND_CONNECTIONS.forEach(([start, end]) => {
@@ -259,12 +247,10 @@ function drawInterface() {
       const lipY = currentFace[LIP_CENTER_INDEX].y * height;
       const dzPixels = deadzone * height;
       const targetY = ty < lipY ? lipY - dzPixels : lipY + dzPixels;
-
-      const diff = lipY - ty; // Positive = finger above lips
-      const color = diff > 0 ? '#22d3ee' : '#fb7185'; // Cyan for up, Pink for down
+      const diff = lipY - ty;
+      const color = diff > 0 ? '#22d3ee' : '#fb7185';
       const absDiff = Math.abs(diff);
 
-      // Gradient line from threshold to finger
       const gradient = ctx.createLinearGradient(tx, targetY, tx, ty);
       gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
       gradient.addColorStop(1, color);
@@ -276,7 +262,6 @@ function drawInterface() {
       ctx.lineWidth = 4;
       ctx.stroke();
 
-      // Animated chevrons for direction
       if (absDiff > dzPixels + 10) {
         const numChevrons = 3;
         const spacing = 15;
@@ -285,10 +270,7 @@ function drawInterface() {
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
         for (let i = 0; i < numChevrons; i++) {
-          const cy = diff > 0
-            ? ty + (i * spacing) + offset
-            : ty - (i * spacing) - offset;
-
+          const cy = diff > 0 ? ty + (i * spacing) + offset : ty - (i * spacing) - offset;
           ctx.beginPath();
           ctx.moveTo(tx - 6, cy + (diff > 0 ? 6 : -6));
           ctx.lineTo(tx, cy);
@@ -297,7 +279,6 @@ function drawInterface() {
         }
       }
 
-      // Main pointer with glow
       ctx.beginPath();
       ctx.arc(tx, ty, 10, 0, 2 * Math.PI);
       ctx.fillStyle = color;
@@ -306,7 +287,6 @@ function drawInterface() {
       ctx.fill();
       ctx.shadowBlur = 0;
     } else {
-      // Idle state - bright green dot
       ctx.beginPath();
       ctx.arc(tx, ty, 8, 0, 2 * Math.PI);
       ctx.fillStyle = '#00ff66';
@@ -336,19 +316,17 @@ async function startTracking() {
     video.srcObject = stream;
     await video.play();
 
-    // Set canvas size
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Hide placeholder
     placeholder.classList.add('hidden');
 
     isTracking = true;
     updateStatus('Gestures active', 'active');
     startBtn.textContent = 'Disable Gestures';
     startBtn.classList.add('active');
+    updateCompactStatus();
 
-    // Start detection loop
     detectFrame();
   } catch (error) {
     console.error('[LazyScroll] Camera error:', error);
@@ -375,13 +353,8 @@ function stopTracking() {
     video.srcObject = null;
   }
 
-  // Clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Show placeholder
   placeholder.classList.remove('hidden');
-
-  // Reset results
   currentHand = null;
   currentFace = null;
 
@@ -395,6 +368,7 @@ function stopTracking() {
     Enable Gestures
   `;
   startBtn.classList.remove('active');
+  updateCompactStatus();
 }
 
 function updateStatus(text, className = '') {
@@ -446,5 +420,110 @@ chrome.storage.local.get(['scrollSpeed', 'deadzone', 'invertScroll'], (result) =
   }
 });
 
-// Initialize on load
+// Camera permission handling
+let cameraPermissionState = 'prompt';
+
+async function checkCameraPermission() {
+  try {
+    const result = await navigator.permissions.query({ name: 'camera' });
+    handlePermissionState(result.state);
+    result.addEventListener('change', () => handlePermissionState(result.state));
+  } catch (e) {
+    chrome.storage.local.get(['cameraPermissionGranted'], (data) => {
+      handlePermissionState(data.cameraPermissionGranted ? 'granted' : 'prompt');
+    });
+  }
+}
+
+async function handlePermissionState(state) {
+  cameraPermissionState = state;
+  updatePermissionUI(state);
+
+  if (state !== 'granted') {
+    const { cameraSetupComplete } = await chrome.storage.local.get(['cameraSetupComplete']);
+    if (!cameraSetupComplete) {
+      openPermissionsPage();
+    }
+  }
+}
+
+function updatePermissionUI(state) {
+  if (state === 'granted') {
+    placeholderText.textContent = 'Click to start';
+    placeholder.classList.remove('denied');
+    setupMessage.classList.add('hidden');
+    controlsSection.classList.remove('hidden');
+  } else if (state === 'denied') {
+    placeholderText.textContent = 'Camera blocked - click to fix';
+    placeholder.classList.add('denied');
+    setupMessage.querySelector('p').textContent = 'Camera access was denied. Click above to try again.';
+    setupMessage.classList.remove('hidden');
+    controlsSection.classList.add('hidden');
+  } else {
+    placeholderText.textContent = 'Click to enable camera';
+    placeholder.classList.remove('denied');
+    setupMessage.classList.remove('hidden');
+    controlsSection.classList.add('hidden');
+  }
+}
+
+function openPermissionsPage() {
+  chrome.tabs.create({ url: chrome.runtime.getURL('permissions/permissions.html') });
+}
+
+placeholder.addEventListener('click', async () => {
+  if (cameraPermissionState !== 'granted') {
+    openPermissionsPage();
+    return;
+  }
+  if (!isTracking) {
+    startTracking();
+  }
+});
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === 'CAMERA_PERMISSION_GRANTED') {
+    cameraPermissionState = 'granted';
+    chrome.storage.local.set({ cameraSetupComplete: true });
+    updatePermissionUI('granted');
+  }
+});
+
+// Compact mode functions
+function enterCompactMode() {
+  fullViewContent.classList.add('hidden');
+  compactView.classList.remove('hidden');
+  updateCompactStatus();
+  chrome.storage.local.set({ compactMode: true });
+}
+
+function exitCompactMode() {
+  compactView.classList.add('hidden');
+  fullViewContent.classList.remove('hidden');
+  chrome.storage.local.set({ compactMode: false });
+}
+
+function updateCompactStatus() {
+  if (isTracking) {
+    compactIndicator.classList.add('active');
+    compactIndicator.classList.remove('inactive');
+    compactText.textContent = 'Gestures active';
+  } else {
+    compactIndicator.classList.remove('active');
+    compactIndicator.classList.add('inactive');
+    compactText.textContent = 'Gestures paused';
+  }
+}
+
+compactBtn.addEventListener('click', enterCompactMode);
+expandBtn.addEventListener('click', exitCompactMode);
+
+chrome.storage.local.get(['compactMode'], (result) => {
+  if (result.compactMode) {
+    enterCompactMode();
+  }
+});
+
+// Initialize
+checkCameraPermission();
 initializeModels();

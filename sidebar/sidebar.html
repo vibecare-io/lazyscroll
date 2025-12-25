@@ -8,71 +8,105 @@
 <body>
   <div class="container">
     <header>
-      <h1>LazyScroll</h1>
-      <p class="tagline">Hands-free scrolling</p>
+      <div class="header-row">
+        <div>
+          <h1>LazyScroll</h1>
+          <p class="tagline">Hands-free scrolling</p>
+        </div>
+        <button class="btn-compact" id="compactBtn" title="Compact mode">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="4 14 10 14 10 20"/>
+            <polyline points="20 10 14 10 14 4"/>
+            <line x1="14" y1="10" x2="21" y2="3"/>
+            <line x1="3" y1="21" x2="10" y2="14"/>
+          </svg>
+        </button>
+      </div>
     </header>
 
-    <div class="camera-section">
-      <div class="camera-container">
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="canvas"></canvas>
-        <div class="camera-placeholder" id="placeholder">
-          <div class="placeholder-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="compact-view hidden" id="compactView">
+      <div class="compact-status">
+        <div class="compact-indicator active" id="compactIndicator"></div>
+        <span id="compactText">Gestures active</span>
+      </div>
+      <button class="btn-expand" id="expandBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 3 21 3 21 9"/>
+          <polyline points="9 21 3 21 3 15"/>
+          <line x1="21" y1="3" x2="14" y2="10"/>
+          <line x1="3" y1="21" x2="10" y2="14"/>
+        </svg>
+        Expand
+      </button>
+    </div>
+
+    <div class="full-view-content" id="fullViewContent">
+      <div class="camera-section">
+        <div class="camera-container" id="cameraContainer">
+          <video id="video" autoplay playsinline muted></video>
+          <canvas id="canvas"></canvas>
+          <div class="camera-placeholder" id="placeholder">
+            <div class="placeholder-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+            <p id="placeholderText">Click to enable camera</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-message" id="setupMessage">
+        <p>Allow camera access to enable hand gesture scrolling</p>
+      </div>
+
+      <div class="controls hidden" id="controls">
+        <button class="btn-primary" id="startBtn">
+          <span class="btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 1 1 3 0m-3 6a1.5 1.5 0 1 0-3 0v3c0 4.418 3.582 8 8 8s8-3.582 8-8v-1.5m-4-6.5v8m0-8a1.5 1.5 0 0 0-3 0m3 0a1.5 1.5 0 0 1 3 0m0 0v1.5m0 0a1.5 1.5 0 0 1 3 0v4.5"/>
             </svg>
+          </span>
+          Enable Gestures
+        </button>
+
+        <div class="setting">
+          <label for="scrollSpeed">Scroll Speed</label>
+          <div class="slider-row">
+            <input type="range" id="scrollSpeed" min="1" max="100" step="1" value="20">
+            <span id="scrollSpeedValue">20 px</span>
           </div>
-          <p>Camera preview</p>
         </div>
-      </div>
-    </div>
 
-    <div class="controls">
-      <button class="btn-primary" id="startBtn">
-        <span class="btn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 1 1 3 0m-3 6a1.5 1.5 0 1 0-3 0v3c0 4.418 3.582 8 8 8s8-3.582 8-8v-1.5m-4-6.5v8m0-8a1.5 1.5 0 0 0-3 0m3 0a1.5 1.5 0 0 1 3 0m0 0v1.5m0 0a1.5 1.5 0 0 1 3 0v4.5"/>
-          </svg>
-        </span>
-        Enable Gestures
-      </button>
-
-      <div class="setting">
-        <label for="scrollSpeed">Scroll Speed</label>
-        <div class="slider-row">
-          <input type="range" id="scrollSpeed" min="1" max="100" step="1" value="20">
-          <span id="scrollSpeedValue">20 px</span>
+        <div class="setting">
+          <label for="deadzone">Neutral Zone</label>
+          <div class="slider-row">
+            <input type="range" id="deadzone" min="0.01" max="0.30" step="0.01" value="0.05">
+            <span id="deadzoneValue">5%</span>
+          </div>
         </div>
-      </div>
 
-      <div class="setting">
-        <label for="deadzone">Neutral Zone</label>
-        <div class="slider-row">
-          <input type="range" id="deadzone" min="0.01" max="0.30" step="0.01" value="0.05">
-          <span id="deadzoneValue">5%</span>
+        <div class="setting checkbox-setting">
+          <label class="checkbox-label">
+            <input type="checkbox" id="invertScroll">
+            <span>Invert scroll direction</span>
+          </label>
+        </div>
+
+        <div class="status" id="status">
+          Ready
         </div>
       </div>
 
-      <div class="setting checkbox-setting">
-        <label class="checkbox-label">
-          <input type="checkbox" id="invertScroll">
-          <span>Invert scroll direction</span>
-        </label>
+      <div class="instructions">
+        <h3>How it works</h3>
+        <ul>
+          <li>Point your index finger above your lips to scroll up</li>
+          <li>Point below your lips to scroll down</li>
+          <li>Keep finger near lip level to pause scrolling</li>
+        </ul>
       </div>
-    </div>
-
-    <div class="status" id="status">
-      Ready
-    </div>
-
-    <div class="instructions">
-      <h3>How it works</h3>
-      <ul>
-        <li>Click <strong>Enable Gestures</strong> and allow camera</li>
-        <li>Point your index finger above your lips to scroll up</li>
-        <li>Point below your lips to scroll down</li>
-        <li>Keep finger near lip level to pause scrolling</li>
-      </ul>
     </div>
 
     <footer class="footer">
